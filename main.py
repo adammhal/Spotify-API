@@ -26,10 +26,10 @@ app = FastAPI()
 
 # Configure CORS to allow requests from your frontend
 origins = [
+    "http://127.0.0.1:5500",
+    "https://adammhal.github.io",
     "http://localhost",
     "http://localhost:8080",
-    "http://127.0.0.1:5500",
-    "https://adammhal.github.io"
 ]
 
 app.add_middleware(
@@ -120,14 +120,14 @@ def get_now_playing():
 @app.get("/api/top-tracks")
 def get_top_tracks():
     """
-    Gets the user's top 5 tracks from the last 4 weeks.
+    Gets the user's top 4 tracks from the last 4 weeks.
     """
     try:
         access_token = get_access_token()
         headers = {'Authorization': f'Bearer {access_token}'}
         params = {
-            'time_range': 'short_term', # last 4 weeks
-            'limit': 5
+            'time_range': 'short_term',
+            'limit': 4 # CHANGED: from 5 to 4
         }
         response = requests.get(TOP_TRACKS_ENDPOINT, headers=headers, params=params)
         response.raise_for_status()
@@ -138,7 +138,8 @@ def get_top_tracks():
             track = {
                 "title": item["name"],
                 "artist": ", ".join(artist["name"] for artist in item["artists"]),
-                "albumImageUrl": item["album"]["images"][2]["url"], # smaller image
+                # CHANGED: from [2] to [1] for higher quality image
+                "albumImageUrl": item["album"]["images"][1]["url"] if len(item["album"]["images"]) > 1 else item["album"]["images"][0]["url"],
                 "songUrl": item["external_urls"]["spotify"],
             }
             tracks.append(track)
@@ -153,14 +154,14 @@ def get_top_tracks():
 @app.get("/api/top-artists")
 def get_top_artists():
     """
-    Gets the user's top 5 artists from the last 4 weeks.
+    Gets the user's top 4 artists from the last 4 weeks.
     """
     try:
         access_token = get_access_token()
         headers = {'Authorization': f'Bearer {access_token}'}
         params = {
             'time_range': 'short_term',
-            'limit': 5
+            'limit': 4 # CHANGED: from 5 to 4
         }
         response = requests.get(TOP_ARTISTS_ENDPOINT, headers=headers, params=params)
         response.raise_for_status()
